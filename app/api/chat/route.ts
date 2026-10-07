@@ -1,0 +1,16 @@
+import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { groqConfig, levelGuides } from '@/lib/groq';
+export async function POST(request:Request){
+ if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
+ const user=await getChatGPTUser();if(!user)return Response.json({error:'Войдите в аккаунт для разговора с ИИ.'},{status:401});
+ const {key,model}=groqConfig();if(!key)return Response.json({error:'Groq ещё не подключён. Сохраните ключ в настройках сервера.'},{status:503});
+ try{
+ const raw=await request.text();if(raw.length>24000)return Response.json({error:'Разговор слишком длинный.'},{status:413});
+ const body=JSON.parse(raw);if(!Object.hasOwn(levelGuides,body.level)||typeof body.topic!=='string'||body.topic.length>100||!Array.isArray(body.messages)||body.messages.length<1||body.messages.length>16||body.messages.some((m:any)=>!m||!['user','assistant'].includes(m.role)||typeof m.text!=='string'||m.text.length>2000)||body.messages.at(-1).role!=='user')return Response.json({error:'Некорректное сообщение.'},{status:400});
+ const system=`You are Emmy, a warm English conversation partner in SpeakEasy AI, a speaking practice app for teenagers. Be clear that you are AI if asked. Never claim to be a real person. Keep the conversation appropriate for teenagers. Do not request personal contact details. Respond to the learner's actual meaning and ask one relevant follow-up. Topic: ${body.topic}. CEFR level: ${body.level}. ${levelGuides[body.level]} Encourage without repetitive praise. If there is an important grammar mistake, gently model the correct form within your natural reply rather than giving a long lesson. Default to English; if the learner asks for Russian help, briefly explain in Russian then return to simple English. Output only your spoken reply, no markdown, no stage directions, no analysis. ${body.realistic&&['B2','C1'].includes(body.level)?'Use natural conversational fillers sparingly and occasionally ask for clarification or offer a respectful counterargument.':'Give the learner room to think and stay supportive.'}`;
+ const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},...body.messages.map((m:any)=>({role:m.role,content:m.text}))],temperature:.7,max_completion_tokens:700}),signal:AbortSignal.timeout(25000)});
+ if(!r.ok){const status=r.status===429?429:502;return Response.json({error:r.status===429?'Достигнут лимит Groq. Подождите немного и попробуйте снова.':r.status===401?'Ключ Groq не принят. Проверьте ключ на сервере.':'Groq временно недоступен или выбранная модель недоступна для аккаунта.'},{status})}
+ const data:any=await r.json();const text=data.choices?.[0]?.message?.content?.replace(/<think>[\s\S]*?<\/think>/g,'').trim();if(!text)return Response.json({error:'ИИ не вернул ответ. Попробуйте ещё раз.'},{status:502});
+ return Response.json({text:text.slice(0,4000),provider:'Groq'},{headers:{'Cache-Control':'no-store'}});
+ }catch(e){return Response.json({error:e instanceof SyntaxError?'Некорректный запрос.':'Не удалось связаться с Groq. Проверьте интернет и повторите.'},{status:e instanceof SyntaxError?400:502})}
+}
