@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./polish.css";
+import "./academy.css";
 
 export const metadata: Metadata = {
-  title: "SpeakEasy AI — больше разговоров, меньше сомнений",
-  description: "Твоё безопасное место для разговорного английского. Голосовая практика A1–C1, интересные темы и новые слова.",
+  title: "SpeakEasy AI — Find your voice",
+  description: "Find your voice in English. A1–C1 conversations, your own topics, vocabulary games and a rewarding learning path.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "SpeakEasy", statusBarStyle: "default" },
   icons: {
@@ -20,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <body className="antialiased">{children}</body>
     </html>
   );

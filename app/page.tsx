@@ -3,5 +3,5 @@ import { getChatGPTUser } from './chatgpt-auth';
 export const dynamic = 'force-dynamic';
 export default async function Home() {
  const user = await getChatGPTUser();
- return <Studio user={user ? {name:user.fullName || 'Друг',email:user.email}:null}/>;
+ return <Studio user={user ? {name:user.fullName || 'Explorer',email:user.email}:null}/>;
 }
