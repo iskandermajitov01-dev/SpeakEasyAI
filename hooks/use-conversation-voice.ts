@@ -36,15 +36,16 @@ export function useConversationVoice(options:Options){
   }catch(e:any){releaseMic();wantLive.current=false;setLive(false);current.current.onError(e.name==='NotAllowedError'?'Разрешите доступ к микрофону в настройках браузера.':e.name==='NotFoundError'?'Микрофон не найден. Подключите его и попробуйте снова.':'Не удалось включить микрофон. Попробуйте ещё раз.')}finally{starting.current=false}
  }
  async function say(text:string){
-  stopAudio();const token=++generation.current;setPreparing(true);const ctrl=new AbortController();request.current=ctrl;
+  if(timer.current)clearTimeout(timer.current);discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();releaseMic();setRecording(false);stopAudio();const token=++generation.current;setPreparing(true);const ctrl=new AbortController();request.current=ctrl;
   try{const r=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:ctrl.signal});if(!r.ok){const d:any=await r.json();throw Error(d.error)}const blob=await r.blob();if(token!==generation.current)return;url.current=URL.createObjectURL(blob);const player=new Audio(url.current);audio.current=player;player.playbackRate=current.current.rate;player.preservesPitch=true;
    player.onplaying=()=>{if(token===generation.current){setSpeaking(true);setPreparing(false)}};
    player.onended=()=>{if(token!==generation.current)return;setSpeaking(false);if(url.current)URL.revokeObjectURL(url.current);url.current='';audio.current=null;if(wantLive.current)timer.current=setTimeout(()=>void listen(),250)};
-   player.onerror=()=>{current.current.onError('Не удалось воспроизвести голос. Нажмите «Прослушать» ещё раз.');setSpeaking(false);setPreparing(false)};
+   player.onerror=()=>{if(token!==generation.current)return;wantLive.current=false;setLive(false);current.current.onError('Не удалось воспроизвести голос. Нажмите «Прослушать» ещё раз.');setSpeaking(false);setPreparing(false)};
    await player.play();
   }catch(e:any){if(token===generation.current){setPreparing(false);setSpeaking(false);if(e.name!=='AbortError'){wantLive.current=false;setLive(false);current.current.onError(e.name==='NotAllowedError'?'Браузер заблокировал звук. Нажмите «Прослушать» у сообщения.':e.message||'Голос временно недоступен.')}}}
  }
  function mic(){if(recorder.current?.state==='recording')recorder.current.stop();else void listen()}
+ useEffect(()=>{const hidden=()=>{if(document.hidden)pause()};document.addEventListener('visibilitychange',hidden);return()=>document.removeEventListener('visibilitychange',hidden)},[]);
  useEffect(()=>()=>{wantLive.current=false;generation.current++;if(timer.current)clearTimeout(timer.current);request.current?.abort();discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();cancelAnimationFrame(raf.current);stream.current?.getTracks().forEach(t=>t.stop());void context.current?.close().catch(()=>{});audio.current?.pause();if(url.current)URL.revokeObjectURL(url.current)},[]);
  return{recording,transcribing,preparing,speaking,live,volume,mic,say,pause};
 }

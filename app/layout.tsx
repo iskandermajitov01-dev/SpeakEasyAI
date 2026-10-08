@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./polish.css";
 
 export const metadata: Metadata = {
   title: "SpeakEasy AI — больше разговоров, меньше сомнений",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
   },
 };
+export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#3478bd'};
 
 export default function RootLayout({
   children,
