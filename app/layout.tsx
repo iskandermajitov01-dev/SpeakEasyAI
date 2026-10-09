@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./polish.css";
 import "./academy.css";
+import "./vivid.css";
 
 export const metadata: Metadata = {
   title: "SpeakEasy AI — Find your voice",
