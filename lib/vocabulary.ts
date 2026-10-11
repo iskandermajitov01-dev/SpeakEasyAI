@@ -1,5 +1,5 @@
 export type WordEntry={ru:string;ipa:string;example?:string};
-export type WordProgress={attempts:number;correct:number;streak:number};
+export type WordProgress={attempts:number;correct:number;streak:number;due?:number;interval?:number;last?:number};
 export function wordEntry(entries:Record<string,WordEntry>,word:string){return Object.hasOwn(entries,word)?entries[word]:undefined}
 export type VocabularyStats={lexicon:Record<string,WordEntry>;study:Record<string,WordProgress>;games:number;bestCombo:number};
 export const wordPattern=/^[a-z]+(?:'[a-z]+)*$/;

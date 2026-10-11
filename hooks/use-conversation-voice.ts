@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-type Options={onTranscript:(text:string)=>void;onError:(text:string)=>void;rate:number};
+type Options={onTranscript:(text:string)=>void;onError:(text:string)=>void;rate:number;onRecording?:(blob:Blob)=>void};
 export function useConversationVoice(options:Options){
  const current=useRef(options);current.current=options;
  const [recording,setRecording]=useState(false),[transcribing,setTranscribing]=useState(false),[preparing,setPreparing]=useState(false),[speaking,setSpeaking]=useState(false),[live,setLive]=useState(false),[volume,setVolume]=useState(0);
@@ -29,15 +29,15 @@ export function useConversationVoice(options:Options){
     releaseMic();setRecording(false);recorder.current=null;if(timer.current)clearTimeout(timer.current);
     if(discard.current||token!==generation.current)return;
     const blob=new Blob(chunks,{type:rec.mimeType||mime||'audio/webm'});if(blob.size<200||(!!AC&&!hasVoice.current)){wantLive.current=false;setLive(false);current.current.onError('No speech was detected. Please try again.');return}
-    setTranscribing(true);const ctrl=new AbortController();request.current=ctrl;
+    current.current.onRecording?.(blob);setTranscribing(true);const ctrl=new AbortController();request.current=ctrl;
     try{const form=new FormData();form.append('file',blob,blob.type.includes('mp4')?'speech.m4a':blob.type.includes('ogg')?'speech.ogg':'speech.webm');const r=await fetch('/api/transcribe',{method:'POST',body:form,signal:ctrl.signal});const result:any=await r.json();if(token!==generation.current)return;if(!r.ok)throw Error(result.error);if(!result.text){current.current.onError('Speech was not recognised. Tap the microphone and try again.');wantLive.current=false;setLive(false);return}setTranscribing(false);current.current.onTranscript(result.text)}catch(e:any){if(e.name!=='AbortError'){current.current.onError(e.message||'Could not recognise speech.');wantLive.current=false;setLive(false)}}finally{if(token===generation.current)setTranscribing(false)}
    };
    rec.start(250);wantLive.current=true;setLive(true);
   }catch(e:any){releaseMic();wantLive.current=false;setLive(false);current.current.onError(e.name==='NotAllowedError'?'Allow microphone access in your browser settings.':e.name==='NotFoundError'?'No microphone found. Connect one and try again.':'Could not start the microphone. Please try again.')}finally{starting.current=false}
  }
- async function say(text:string){
+ async function say(text:string,rate?:number){
   if(timer.current)clearTimeout(timer.current);discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();releaseMic();setRecording(false);stopAudio();const token=++generation.current;setPreparing(true);const ctrl=new AbortController();request.current=ctrl;
-  try{const r=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:ctrl.signal});if(!r.ok){const d:any=await r.json();throw Error(d.error)}const blob=await r.blob();if(token!==generation.current)return;url.current=URL.createObjectURL(blob);const player=new Audio(url.current);audio.current=player;player.playbackRate=current.current.rate;player.preservesPitch=true;
+  try{const r=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:ctrl.signal});if(!r.ok){const d:any=await r.json();throw Error(d.error)}const blob=await r.blob();if(token!==generation.current)return;url.current=URL.createObjectURL(blob);const player=new Audio(url.current);audio.current=player;player.playbackRate=rate??current.current.rate;player.preservesPitch=true;
    player.onplaying=()=>{if(token===generation.current){setSpeaking(true);setPreparing(false)}};
    player.onended=()=>{if(token!==generation.current)return;setSpeaking(false);if(url.current)URL.revokeObjectURL(url.current);url.current='';audio.current=null;if(wantLive.current)timer.current=setTimeout(()=>void listen(),250)};
    player.onerror=()=>{if(token!==generation.current)return;wantLive.current=false;setLive(false);current.current.onError('Could not play audio. Tap Play reply to try again.');setSpeaking(false);setPreparing(false)};

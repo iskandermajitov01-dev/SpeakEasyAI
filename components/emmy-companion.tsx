@@ -15,6 +15,7 @@ export function EmmyMoment({mood='hug',children}:{mood?:EmmyMood;children:ReactN
 }
 
 const pageLines:Record<string,string[]>={
+ adventures:["A little courage, a little quest. Where shall we go?","Every mission is a story you get to tell.","A new adventure? I’ve got my cheering headphones on."],
  home:["Hey, you. Ready for a little English?","Big confidence starts with a tiny hello.","You bring the stories. I’ll bring the encouragement."],
  topics:["A café, a new city, outer space… where next?","Pick something you love. The words will follow.","Curiosity looks good on you."],
  dictionary:["Words are little souvenirs from your conversations.","Collect a word. Play a round. Make it yours.","Let’s turn ‘I’ve seen it’ into ‘I know it’!"],

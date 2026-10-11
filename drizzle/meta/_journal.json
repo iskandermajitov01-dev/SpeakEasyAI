@@ -15,6 +15,13 @@
       "when": 1791476149633,
       "tag": "0001_powerful_skreet",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791737819650,
+      "tag": "0002_bent_iron_monger",
+      "breakpoints": true
     }
   ]
 }
