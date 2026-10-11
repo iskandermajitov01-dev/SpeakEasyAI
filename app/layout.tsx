@@ -4,6 +4,7 @@ import "./polish.css";
 import "./academy.css";
 import "./vivid.css";
 import "./design.css";
+import "./plush.css";
 
 export const metadata: Metadata = {
   title: "SpeakEasy AI — Find your voice",

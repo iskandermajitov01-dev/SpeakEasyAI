@@ -1,0 +1,69 @@
+/* A soft spring, a small squash, and time to settle. */
+.academy-app{--plush-spring:cubic-bezier(.22,1.45,.4,1);--plush-settle:cubic-bezier(.2,.8,.2,1)}
+.academy-app .page-enter{transform-origin:50% 100px;animation:plushPageIn .55s var(--plush-spring) both;transition:opacity .17s ease,filter .17s ease,transform .17s ease;will-change:auto}
+.academy-app .page-enter.page-leave{animation:none;opacity:0;transform:translateY(-8px) scale(.988);filter:blur(2px);pointer-events:none}
+.academy-app .welcome h1:focus{outline:none}
+@keyframes plushPageIn{0%{opacity:0;transform:translateY(16px) scale(.976)}65%{opacity:1;transform:translateY(-2px) scale(1.002)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.academy-app button,.academy-app .primary-button,.academy-app .outline-button,.app-dialog button,.app-dialog a{transition:transform .42s cubic-bezier(.22,1.5,.4,1),background .22s ease,box-shadow .3s ease,border-color .22s ease,color .22s ease;transform-origin:center 65%}
+.academy-app button:not(:disabled):active,.academy-app .primary-button:not(:disabled):active,.academy-app .outline-button:not(:disabled):active,.app-dialog button:not(:disabled):active,.app-dialog a:active{transform:translateY(3px) scale(.965,.93);box-shadow:0 1px 0 #6787b11a;transition:transform .1s ease-out,box-shadow .1s ease-out}
+.academy-app .nav-item{transition:background .3s,box-shadow .35s,transform .48s var(--plush-spring),color .25s}
+.academy-app .nav-item:hover{transform:translateX(4px) scale(1.018)}.academy-app .nav-item:active{transform:translateX(3px) scale(.97)!important}.academy-app .nav-item.selected>svg{animation:plushIconHello .48s var(--plush-spring)}
+.academy-app .nav-item.selected .nav-dot{animation:plushDotPop .52s var(--plush-spring)}
+@keyframes plushIconHello{0%{transform:scale(.8) rotate(-10deg)}65%{transform:scale(1.12) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes plushDotPop{0%{transform:scale(0)}65%{transform:scale(1.25)}100%{transform:scale(1)}}
+.academy-app .discovery-card,.academy-app .shop-card,.academy-app .milestone,.academy-app .home-quick>button,.academy-app .word-card{transition:transform .52s var(--plush-spring),box-shadow .35s ease,border-color .25s ease;background-clip:padding-box}
+.academy-app .discovery-card:hover,.academy-app .shop-card:hover{transform:translateY(-5px) rotate(-.35deg) scale(1.009)}.academy-app .discovery-card:nth-child(even):hover,.academy-app .shop-card:nth-child(even):hover{transform:translateY(-5px) rotate(.35deg) scale(1.009)}
+.academy-app .vocab-mode:hover:not(:disabled){transform:translateY(-4px) scale(1.015)}.academy-app .vocab-mode:not(:disabled):active{transform:translateY(2px) scale(.975,.95)}
+.academy-app .category-tabs button.selected,.academy-app .filter-tabs button.selected{animation:plushSelected .4s var(--plush-spring)}
+@keyframes plushSelected{0%{transform:scale(.91,.94)}70%{transform:scale(1.035,1.015)}100%{transform:scale(1)}}
+.academy-app .interest-button.selected>svg{animation:plushIconHello .48s var(--plush-spring)}
+.academy-app .game-feedback,.app-dialog .assessment-result,.academy-app .notice{animation:plushFeedback .4s var(--plush-spring)}
+@keyframes plushFeedback{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.app-dialog[data-state=open]{animation:plushDialogIn .42s cubic-bezier(.22,1.3,.4,1)!important}.app-dialog[data-state=closed]{animation:plushDialogOut .17s ease-in!important}
+@keyframes plushDialogIn{from{opacity:0;scale:.94;translate:0 10px}to{opacity:1;scale:1;translate:0 0}}
+@keyframes plushDialogOut{from{opacity:1;scale:1}to{opacity:0;scale:.96}}
+.academy-app .setting-toggle input:before{transition:transform .4s var(--plush-spring)}
+.academy-app .mobile-nav button.selected svg{animation:plushIconHello .48s var(--plush-spring)}
+.academy-app .vocab-training,.academy-app .vocab-game,.academy-app .discovery-toolbar{scroll-margin-top:25px}
+
+/* Emmy's six transparent poses share one small atlas. */
+.emmy-character{--emmy-size:132px;display:inline-block;position:relative;width:var(--emmy-size);height:var(--emmy-size);isolation:isolate;flex-shrink:0;pointer-events:none}
+.emmy-body{display:block;position:absolute;inset:0;transform-origin:50% 82%;animation:emmyBreathe 4.2s ease-in-out infinite}
+.emmy-sprite{position:absolute;inset:0;display:block;background-image:url('/art/emmy-poses.webp');background-size:300% 200%;background-repeat:no-repeat;filter:drop-shadow(0 5px 3px #4774ae0d)}
+.pose-idle{background-position:0 0}.pose-wave{background-position:50% 0}.pose-celebrate{background-position:100% 0}.pose-think{background-position:0 100%}.pose-blink{background-position:50% 100%}.pose-hug{background-position:100% 100%}
+.emmy-ground{position:absolute;width:48%;height:8%;bottom:11%;left:26%;background:#7ba7dc22;border-radius:50%;filter:blur(4px);transform-origin:center;animation:emmyShadow 4.2s ease-in-out infinite;z-index:-1}
+@keyframes emmyBreathe{0%,100%{transform:translateY(0) scale(1,1) rotate(-1deg)}50%{transform:translateY(-3px) scale(1.025,.985) rotate(1deg)}}
+@keyframes emmyShadow{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(.88);opacity:.4}}
+.mood-wave .emmy-body{animation:emmyWave .85s ease-in-out 2,emmyBreathe 4.2s 1.7s ease-in-out infinite}
+@keyframes emmyWave{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-7deg) scale(1.025,.975)}65%{transform:rotate(6deg) translateY(-4px) scale(.98,1.02)}}
+.mood-celebrate .emmy-body{animation:emmyHappyHop .75s cubic-bezier(.2,.7,.2,1) 2,emmyBreathe 4.2s 1.5s ease-in-out infinite}
+@keyframes emmyHappyHop{0%,100%{transform:translateY(0) scale(1)}18%{transform:translateY(4px) scale(1.1,.88)}48%{transform:translateY(-14px) scale(.94,1.08) rotate(-5deg)}72%{transform:translateY(3px) scale(1.06,.94)}88%{transform:translateY(-2px) scale(.98,1.02)}}
+.mood-think .emmy-body{animation:emmyThink 3.2s ease-in-out infinite}
+@keyframes emmyThink{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg) translateY(-2px)}}
+.mood-hug .emmy-body{animation:emmyHug 2.8s ease-in-out infinite}
+@keyframes emmyHug{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(4deg) scale(1.03,.98)}}
+.emmy-spark{position:absolute;opacity:0;pointer-events:none;color:#f0bf63;font-size:24px;top:32%;left:12%;text-shadow:0 2px white}.spark-two{left:auto;right:12%;top:16%;color:#b4a0e6;font-size:21px}.spark-three{left:auto;right:10%;top:55%;color:#e9a69a;font-size:16px}
+.mood-celebrate .emmy-spark{animation:emmySpark .95s cubic-bezier(.2,.7,.2,1) 2}.mood-celebrate .spark-two{animation-delay:.13s}.mood-celebrate .spark-three{animation-delay:.24s}
+@keyframes emmySpark{0%{opacity:0;transform:translateY(8px) scale(.3) rotate(-20deg)}40%{opacity:1;transform:translateY(-5px) scale(1.1) rotate(10deg)}100%{opacity:0;transform:translateY(-25px) scale(.6) rotate(30deg)}}
+
+.emmy-companion{position:fixed;right:24px;bottom:18px;z-index:32;width:132px;display:flex;align-items:center;flex-direction:column;isolation:isolate;animation:emmyArrives .65s cubic-bezier(.22,1.4,.4,1) both}
+@keyframes emmyArrives{from{opacity:0;transform:translateY(30px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+.academy-app .emmy-pet-button{border:0;background:transparent;padding:0;display:flex;align-items:center;flex-direction:column;gap:0;outline-offset:0;min-height:125px;touch-action:manipulation;filter:drop-shadow(0 7px 13px #5d83bb12);border-radius:32px}
+.academy-app .emmy-pet-button:hover{background:transparent;transform:translateY(-3px) rotate(2deg)}.academy-app .emmy-pet-button:active{transform:translateY(3px) scale(1.06,.91);box-shadow:none}
+.emmy-pet-button .emmy-character{margin-bottom:-15px}
+.emmy-pet-name{display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fffefa;border:1px solid #dce6f6;color:#6685b2;border-radius:13px;box-shadow:0 3px 0 #dae5f324;font-size:10px;font-weight:750;letter-spacing:.2px;z-index:1}
+.emmy-pet-name svg{color:#d5aa68}.emmy-tap-hint{display:block;margin-top:6px;padding:3px 7px;font-size:8px;line-height:1.4;color:#7189aa;background:#f8fbfff2;border-radius:7px;white-space:nowrap}
+.emmy-bubble{position:absolute;bottom:calc(100% + 6px);right:12px;width:270px;background:#fffefa;border:1px solid #dce6f6;border-radius:24px 24px 8px 24px;padding:17px 18px 15px;box-shadow:0 12px 40px #486d9e1a,0 4px 0 #e5ecf533;transform-origin:86% 100%;animation:emmyBubbleIn .48s cubic-bezier(.22,1.5,.4,1) both}
+.emmy-bubble[hidden]{display:none}.emmy-bubble:after{content:'';position:absolute;right:24px;bottom:-6px;width:12px;height:12px;background:#fffefa;border-right:1px solid #dce6f6;border-bottom:1px solid #dce6f6;transform:rotate(45deg);border-radius:0 0 4px 0}
+@keyframes emmyBubbleIn{from{opacity:0;transform:translateY(7px) scale(.85,.88)}65%{opacity:1;transform:translateY(-2px) scale(1.02,1.02)}to{opacity:1;transform:translateY(0) scale(1)}}
+.emmy-bubble-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}.emmy-bubble-heading>span{display:flex;align-items:center;gap:5px;font-size:7px;font-weight:750;letter-spacing:1px;color:#8c9db8}.emmy-bubble-heading>span svg{color:#d9a0a2}.emmy-bubble-heading>button{border:0;background:#f1f5fc;border-radius:8px;color:#8b9fbf;padding:4px;display:grid;place-items:center;min-width:25px;min-height:25px}
+.emmy-bubble>p{font-size:14px;font-weight:600;line-height:1.65;color:#56749b;margin:9px 0 12px;overflow-wrap:anywhere}
+.emmy-bubble-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}.emmy-explore{display:flex;align-items:center;gap:8px;border:0;background:#edf3ff;border-radius:11px;padding:9px 12px;color:#6d8abd;font-size:10px;font-weight:650;min-height:34px}.emmy-rest{border:0;background:#f5f0fc;color:#a692c0;border-radius:10px;width:31px;height:31px;display:grid;place-items:center}.emmy-wake{display:flex;align-items:center;gap:5px;border:1px solid #e3e9f4;border-radius:9px;color:#8297b6;background:#fffefa;font-size:9px;padding:6px 9px;margin-top:5px}
+.emmy-companion.is-resting .emmy-body,.emmy-companion.is-resting .emmy-ground{animation:none}.emmy-companion.is-resting .emmy-sprite{opacity:.88}.emmy-companion.is-resting .emmy-tap-hint{font-style:italic}.emmy-companion:focus-within .emmy-tap-hint{color:#4469a4}
+.emmy-moment{display:flex;align-items:center;gap:9px;padding:3px 16px 3px 0;background:linear-gradient(110deg,#edf4ff,#f5f0fc);border:1px solid #e2e9f6;border-radius:20px;margin:16px 0 19px;text-align:left;min-width:0}
+.emmy-moment .emmy-character{--emmy-size:88px;margin:-9px -1px -9px 0}.emmy-moment>p{font-size:12px;line-height:1.7;color:#7088a9;flex:1;margin:0;min-width:0}.emmy-moment b{display:block;font-size:8px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:#9caac1;margin-bottom:4px}.vocab-game-result>.emmy-moment{width:100%;max-width:440px;justify-self:center;margin:0 0 14px}.app-dialog .emmy-moment p{font-size:12px;color:#7088a9}.app-dialog:has(.emmy-moment)>.dialog-art{display:none}
+.academy-app .footer{padding-right:120px}
+@media(hover:none){.academy-app .discovery-card:hover,.academy-app .discovery-card:nth-child(even):hover,.academy-app .shop-card:hover,.academy-app .shop-card:nth-child(even):hover,.academy-app .vocab-mode:hover:not(:disabled){transform:none}.academy-app .emmy-pet-button:hover{transform:none}}
+@media(max-width:760px){.emmy-companion{right:12px;bottom:calc(83px + env(safe-area-inset-bottom));width:91px}.emmy-companion .emmy-character{--emmy-size:103px}.academy-app .emmy-pet-button{min-height:99px;border-radius:28px}.emmy-pet-button .emmy-character{margin-top:-5px;margin-bottom:-17px}.emmy-pet-name{font-size:9px;padding:4px 9px}.emmy-tap-hint{font-size:7px;margin-top:4px;padding:3px 5px}.emmy-bubble{width:235px;right:3px;bottom:calc(100% + 9px);padding:15px 16px 13px;border-radius:22px 22px 8px 22px}.emmy-bubble>p{font-size:13px;line-height:1.7}.emmy-bubble-heading>span{font-size:6px;letter-spacing:.7px}.emmy-bubble-heading>button{min-width:28px;min-height:28px}.emmy-rest{width:35px;height:35px}.emmy-explore{min-height:36px;font-size:10px}.emmy-wake{font-size:8px;margin-top:3px}.emmy-moment{border-radius:17px;padding-right:12px;gap:4px}.emmy-moment .emmy-character{--emmy-size:78px}.emmy-moment p,.app-dialog .emmy-moment p{font-size:11px}.emmy-moment b{font-size:7px}.academy-app .footer{padding-right:0}.academy-app .mobile-nav button:not(:disabled):active{transform:scale(.91,.9)}.academy-app .page-enter{transform-origin:50% 120px}.academy-app .vocab-training,.academy-app .vocab-game{scroll-margin-top:20px}}
+@media(max-width:360px){.emmy-bubble{width:218px}.emmy-companion{right:8px;width:85px}.emmy-companion .emmy-character{--emmy-size:96px}}
+@media(prefers-reduced-motion:reduce){.academy-app *,.academy-app *:before,.academy-app *:after,.app-dialog *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.academy-app .page-enter.page-leave{opacity:1;transform:none;filter:none}.academy-app button:active,.app-dialog button:active{transform:none!important}.emmy-body,.emmy-ground{transform:none!important}.emmy-spark{display:none}}
