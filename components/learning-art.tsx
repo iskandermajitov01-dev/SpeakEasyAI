@@ -1,3 +1,4 @@
+import {EmmyCharacter} from './emmy-companion';
 import {ArrowUpRight,Coins,Headphones,Sparkles} from 'lucide-react';
 
 const scenes:Record<string,string>={Life:'life',Travel:'travel',Culture:'culture',Learning:'ideas',Ideas:'ideas',Work:'work',Roleplay:'cafe','Your topics':'ideas'};
@@ -17,4 +18,4 @@ export function PageArt({view,balance}:{view:string;balance?:number}){
  const c=content[view];if(!c)return null;
  return <section className={`illustrated-banner banner-${view}`}><div><span className="eyebrow"><Sparkles size={14}/>{c.eyebrow}</span><h2>{c.title}</h2><p>{c.text}</p>{balance!==undefined&&<div className="banner-wallet"><Coins size={23}/><strong>{balance}</strong><span>Sparks available</span></div>}</div>{c.art==='topic'?<div className={`banner-art topic-art scene-${c.scene}`} aria-hidden="true"/>:<img className="banner-art" src={`/art/${c.art==='games'?'word-play':'emmy-world'}.webp`} alt="" width="600" height="400" loading="eager"/>}</section>;
 }
-export function HeroArt(){return <div className="hero-illustration" aria-hidden="true"><img src="/art/emmy-world.webp" alt="" width="600" height="400" fetchPriority="high"/><span className="illustration-sticker sticker-hello">Hello, possibility. <Sparkles size={16}/></span><span className="illustration-sticker sticker-voice"><Headphones size={16}/>Your voice belongs here.</span></div>}
+export function HeroArt(){return <div className="hero-illustration" aria-hidden="true"><span className="hero-letter">Aa</span><span className="hero-letter letter-two">✦</span><span className="hero-letter letter-three">✧</span><EmmyCharacter mood="wave" className="hero-emmy"/><span className="illustration-sticker sticker-hello">Hello, possibility. <Sparkles size={16}/></span><span className="illustration-sticker sticker-voice"><Headphones size={16}/>Your voice belongs here.</span></div>}

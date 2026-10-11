@@ -6,6 +6,7 @@ import "./vivid.css";
 import "./design.css";
 import "./plush.css";
 import "./adventures.css";
+import "./confetti.css";
 
 export const metadata: Metadata = {
   title: "SpeakEasy AI — Find your voice",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
   },
 };
-export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#3478bd'};
+export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#faf1df'};
 
 export default function RootLayout({
   children,
