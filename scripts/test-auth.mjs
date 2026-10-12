@@ -1,0 +1,40 @@
+// API-only integration checks against a running LOCAL preview. No real credentials.
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+const origin=process.env.AUTH_TEST_ORIGIN||'http://127.0.0.1:5174';
+assert(['localhost','127.0.0.1'].includes(new URL(origin).hostname),'Use a local preview only.');
+const suffix=randomBytes(5).toString('hex'),username=`test_${suffix}`,password=randomBytes(20).toString('hex'),nextPassword=randomBytes(20).toString('hex');
+async function post(path,body,cookie='',requestOrigin=origin){const r=await fetch(origin+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:requestOrigin,...(cookie?{Cookie:cookie}:{})},body:JSON.stringify(body)});const text=await r.text();let data;try{data=JSON.parse(text)}catch{data={error:text.slice(0,120)}}return {status:r.status,data,cookie:r.headers.get('set-cookie')||''}}
+async function get(path,cookie=''){const r=await fetch(origin+path,{headers:cookie?{Cookie:cookie}:{}});return {status:r.status,data:await r.json()}}
+const credentials={username,password};
+assert.equal((await post('/api/auth',{action:'register',...credentials},'','https://foreign.invalid')).status,403);
+assert.equal((await post('/api/auth',{action:'register',username,password:'too-short'})).status,400);
+const registration=await post('/api/auth',{action:'register',...credentials});
+assert.equal(registration.status,200,registration.data.error);
+assert.match(registration.cookie,/HttpOnly/);assert.match(registration.cookie,/SameSite=Lax/);assert.match(registration.cookie,/Max-Age=86400/);
+let cookie=registration.cookie.split(';')[0];
+assert.equal((await get('/api/auth',cookie)).data.user.username,username);
+assert.equal((await post('/api/auth',{action:'register',...credentials})).status,409);
+assert.equal((await post('/api/academy',{action:'register',name:'Auth test'},cookie)).status,200);
+assert.equal((await post('/api/auth',{action:'login',username,password:'incorrect-password'})).status,401);
+const login=await post('/api/auth',{action:'login',username:username.toUpperCase(),password,remember:true});
+assert.equal(login.status,200);assert.match(login.cookie,/Max-Age=2592000/);
+const secondCookie=login.cookie.split(';')[0];
+const other=await post('/api/auth',{action:'register',username:`other_${suffix}`,password});
+assert.equal(other.status,200);assert.equal((await get('/api/academy',other.cookie.split(';')[0])).data.academy,null);
+assert.equal((await get('/api/profile')).status,401);
+assert.equal((await get('/api/auth','speakeasy_session='+'a'.repeat(64))).data.user,null);
+assert.equal((await post('/api/auth',{action:'password',password:'incorrect-password',newPassword:nextPassword},cookie)).status,401);
+assert.equal((await post('/api/auth',{action:'password',password,newPassword:nextPassword},cookie,'https://foreign.invalid')).status,403);
+const changed=await post('/api/auth',{action:'password',password,newPassword:nextPassword},cookie);
+assert.equal(changed.status,200,changed.data.error);cookie=changed.cookie.split(';')[0];
+assert.equal((await get('/api/auth',secondCookie)).data.user,null,'Password change revokes other sessions.');
+assert.equal((await post('/api/auth',{action:'login',...credentials})).status,401,'Old password is rejected.');
+assert.equal((await post('/api/auth',{action:'login',username,password:nextPassword})).status,200);
+assert.equal((await post('/api/auth',{action:'logout'},cookie,'https://foreign.invalid')).status,403);
+const logout=await post('/api/auth',{action:'logout'},cookie);assert.equal(logout.status,200);assert.match(logout.cookie,/Max-Age=0/);
+assert.equal((await get('/api/auth',cookie)).data.user,null,'Logged-out token cannot be reused.');
+const missing=`missing_${suffix}`;let limited;
+for(let i=0;i<9;i++)limited=await post('/api/auth',{action:'login',username:missing,password});
+assert.equal(limited.status,429,'Repeated guesses are rate limited.');
+console.log('PASS: registration, duplicate login, case normalization, incorrect password, persistent cookie, account isolation, CSRF, password rotation, session revocation, logout and rate limiting.');

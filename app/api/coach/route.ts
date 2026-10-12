@@ -1,8 +1,8 @@
-import {getChatGPTUser} from '@/app/chatgpt-auth';
+import {getAppUser} from '@/lib/app-auth';
 import {groqConfig,levelGuides} from '@/lib/groq';
 export async function POST(request:Request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
- if(!await getChatGPTUser())return Response.json({error:'Please sign in.'},{status:401});
+ if(!await getAppUser())return Response.json({error:'Please sign in.'},{status:401});
  const {key,model}=groqConfig();if(!key)return Response.json({error:'The coach is temporarily unavailable.'},{status:503});
  try{
   const raw=await request.text();if(raw.length>24000)return Response.json({error:'Conversation too long.'},{status:413});

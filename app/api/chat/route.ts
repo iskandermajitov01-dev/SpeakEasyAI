@@ -1,11 +1,11 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getAppUser } from '@/lib/app-auth';
 import { groqConfig, levelGuides } from '@/lib/groq';
 import {storage} from '@/db/storage';
 import {academy} from '@/lib/academy-server';
 import {missions} from '@/lib/adventures';
 export async function POST(request:Request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
- const user=await getChatGPTUser();if(!user)return Response.json({error:'Sign in to talk with Emmy.'},{status:401});
+ const user=await getAppUser();if(!user)return Response.json({error:'Sign in to talk with Emmy.'},{status:401});
  const {key,model}=groqConfig();if(!key)return Response.json({error:'AI is not connected yet. Please try again later.'},{status:503});
  try{
  const raw=await request.text();if(raw.length>24000)return Response.json({error:'Conversation too long.'},{status:413});

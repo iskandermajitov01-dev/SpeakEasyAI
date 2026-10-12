@@ -7,6 +7,7 @@ import "./design.css";
 import "./plush.css";
 import "./adventures.css";
 import "./confetti.css";
+import "./auth.css";
 
 export const metadata: Metadata = {
   title: "SpeakEasy AI — Find your voice",

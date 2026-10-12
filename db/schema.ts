@@ -2,6 +2,15 @@
 // Add Drizzle tables here when the site actually needs a database.
 // See examples/d1/db/schema.ts for an opt-in example.
 import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+export const accounts=sqliteTable('app_accounts',{
+ userId:text('user_id').primaryKey(),username:text('username').notNull().unique(),passwordHash:text('password_hash').notNull(),created:integer('created').notNull()
+});
+export const authSessions=sqliteTable('app_auth_sessions',{
+ tokenHash:text('token_hash').primaryKey(),userId:text('user_id').notNull(),expires:integer('expires').notNull()
+});
+export const authAttempts=sqliteTable('app_auth_attempts',{
+ bucket:text('bucket').primaryKey(),attempts:integer('attempts').notNull(),expires:integer('expires').notNull()
+});
 export const profiles = sqliteTable('learning_profiles', {
  userId: text('user_id').primaryKey(),
  payload: text('payload').notNull(),
