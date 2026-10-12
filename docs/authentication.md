@@ -10,10 +10,7 @@ not sign a visitor into a learning account.
   `-`, starting with a letter or number) and a password of 12–128 characters.
 - New accounts choose a display name, daily goal and interests, then take the
   placement check. Leaderboard sharing and conversation memory start disabled.
-- A currently authenticated legacy ChatGPT learner can explicitly connect their
-  existing profile during registration. This attaches credentials to the same
-  stable user ID; no profile data is copied, deleted, or merged with other users.
-  A legacy profile can be connected only once, enforced by the primary key.
+- Platform identity headers are ignored. Legacy ChatGPT profile import is disabled on Vercel.
 - Sign out is a same-origin POST to `/api/auth`. It revokes the current session,
   expires its cookie and returns to the home page. It does not sign out of ChatGPT.
 - Settings provides password changes with current-password reauthentication.
@@ -24,8 +21,7 @@ not sign a visitor into a learning account.
 ## Storage and security
 
 `app_accounts`, `app_auth_sessions` and `app_auth_attempts` are created by
-`drizzle/0003_smooth_carlie_cooper.sql`. Apply the migration locally once; Sites
-applies the packaged migrations to its hosted database at publication.
+`drizzle/0003_smooth_carlie_cooper.sql`. `npm run db:migrate` applies migrations to local SQLite or remote Turso; Vercel builds run this automatically. See ../VERCEL.md.
 
 Passwords use native `node:crypto` scrypt with N=32768, r=8, p=3, a random
 128-bit salt and a 64-byte result. This is one of the profiles in the
@@ -41,10 +37,7 @@ Authentication responses are no-store. Every authentication mutation checks
 Origin and bounds the JSON body. Persistent atomic rate counters limit IPs,
 IP/login combinations, registration and password changes before expensive KDFs.
 
-The separate access gate on the currently private `chatgpt.site` publication
-still belongs to Sites. This change preserves its audience; it does not make
-the site public. On localhost, no real ChatGPT login is needed. The old local
-Sites mock identity is only useful for testing legacy-profile attachment.
+Vercel and local previews use only SpeakEasy accounts. The previous private Sites publication has its own platform gate; this source change does not alter that publication.
 
 ## Verification
 

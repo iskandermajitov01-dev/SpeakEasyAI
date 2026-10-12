@@ -1,4 +1,5 @@
-import {getChatGPTUser} from '@/app/chatgpt-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import {storage} from '@/db/storage';
 import {authJson,consumeAttempt,cookieValue,getAppUser,newSession,removeSession,sameOrigin} from '@/lib/app-auth';
 import {dummyPasswordHash,hashPassword,validPassword,validUsername,verifyPassword} from '@/lib/passwords';
@@ -18,8 +19,8 @@ export async function POST(request:Request){
    await removeSession();return authJson({ok:true},200,cookieValue(request,'',0));
   }
   if(!['register','login','password'].includes(b.action))return authJson({error:'Unknown action.'},400);
-  // CF-Connecting-IP is supplied by the host; client forwarded-IP headers are ignored.
-  const ip=request.headers.get('cf-connecting-ip')||'local';
+  // Vercel overwrites this header; ignore arbitrary forwarded headers locally.
+  const ip=process.env.VERCEL==='1'?(request.headers.get('x-forwarded-for')?.split(',')[0].trim()||'unknown'):'local';
   if(!await consumeAttempt(`auth-ip:${ip}`,60,15*60000))return authJson({error:'Too many attempts. Please try again in 15 minutes.'},429);
   const password=typeof b.password==='string'?b.password:'';
   if(password.length>128||!password)return authJson({error:'Enter your password (up to 128 characters).'},400);
@@ -47,13 +48,7 @@ export async function POST(request:Request){
    const existing=await db.prepare('SELECT 1 FROM app_accounts WHERE username=?').bind(username).first();
    if(existing)return authJson({error:'That login is already taken. Try another one.'},409);
    userId='app_'+crypto.randomUUID();
-   if(b.importProgress===true){
-    const legacy=await getChatGPTUser();
-    if(!legacy)return authJson({error:'Your previous sign-in expired. Create a new profile instead.'},409);
-    const profile=await db.prepare('SELECT 1 FROM academy_profiles WHERE user_id=?').bind(legacy.userId).first();
-    if(!profile)return authJson({error:'There is no previous profile to connect.'},409);
-    userId=legacy.userId;
-   }
+   if(b.importProgress===true)return authJson({error:'Legacy profile import is unavailable on this host.'},400);
    const hash=await hashPassword(password);
    try{await db.prepare('INSERT INTO app_accounts (user_id,username,password_hash,created) VALUES (?,?,?,?)').bind(userId,username,hash,Date.now()).run()}
    catch(e){if(String(e).includes('UNIQUE'))return authJson({error:'That login or previous profile already has an account. Please sign in or choose another login.'},409);throw e}

@@ -1,3 +1,6 @@
+import {sameOrigin} from '@/lib/app-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import {getAppUser} from '@/lib/app-auth';
 import {storage} from '@/db/storage';
 import {academy,utcDay} from '@/lib/academy-server';
@@ -6,7 +9,7 @@ import {missions,roomItems,suitable} from '@/lib/adventures';
 const json=(d:unknown,status=200)=>Response.json(d,{status,headers:{'Cache-Control':'no-store'}});
 export async function GET(){const user=await getAppUser();if(!user)return json({error:'Sign in to save your learning journey.'},401);try{return json({academy:await academy(user.userId)})}catch{return json({error:'Your profile is temporarily unavailable. Please retry.'},503)}}
 export async function POST(request:Request){
- if(request.headers.get('origin')!==new URL(request.url).origin)return json({error:'Forbidden'},403);
+ if(!sameOrigin(request))return json({error:'Forbidden'},403);
  const user=await getAppUser();if(!user)return json({error:'Please sign in first.'},401);
  try{
  const raw=await request.text();if(raw.length>16000)return json({error:'Request too large.'},413);const b=JSON.parse(raw),db=storage(),id=user.userId,a=await academy(id);

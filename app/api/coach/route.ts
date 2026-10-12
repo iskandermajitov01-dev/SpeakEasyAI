@@ -1,7 +1,10 @@
+import {sameOrigin} from '@/lib/app-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import {getAppUser} from '@/lib/app-auth';
 import {groqConfig,levelGuides} from '@/lib/groq';
 export async function POST(request:Request){
- if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
+ if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});
  if(!await getAppUser())return Response.json({error:'Please sign in.'},{status:401});
  const {key,model}=groqConfig();if(!key)return Response.json({error:'The coach is temporarily unavailable.'},{status:503});
  try{

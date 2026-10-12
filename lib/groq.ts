@@ -1,5 +1,4 @@
-import { env } from 'cloudflare:workers';
-export function groqConfig(){return {key:env.GROQ_API_KEY?.trim() || '',model:env.GROQ_MODEL?.trim() || 'qwen/qwen3.8-27b'}}
+export function groqConfig(){return {key:process.env.GROQ_API_KEY?.trim() || '',model:process.env.GROQ_MODEL?.trim() || 'qwen/qwen3.8-27b'}}
 export const levelGuides:Record<string,string>={
  A1:'Use very common words, present simple, one short question at a time. Maximum 20 words. Help with a short example when the learner struggles.',
  A2:'Use everyday vocabulary and simple past/future. Maximum 35 words. Ask one concrete question.',

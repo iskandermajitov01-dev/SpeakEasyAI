@@ -1,3 +1,6 @@
+import {sameOrigin} from '@/lib/app-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import { getAppUser } from '@/lib/app-auth';
 import { storage } from '@/db/storage';
 import { wordPattern, type WordEntry, type WordProgress } from '@/lib/vocabulary';
@@ -7,7 +10,7 @@ export async function GET(){
 }
 export async function PUT(request:Request){
  const user=await getAppUser();if(!user)return Response.json({error:'Please sign in'},{status:401});
- if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
+ if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});
  if(Number(request.headers.get('content-length')||0)>600000)return Response.json({error:'Too large'},{status:413});
  try{const raw=await request.text();if(raw.length>600000)return Response.json({error:'Too large'},{status:413});const p=JSON.parse(raw);const s=p.stats;
  if(!['A1','A2','B1','B2','C1'].includes(p.level)||!Array.isArray(p.interests)||p.interests.length>3||p.interests.some((v:unknown)=>typeof v!=='string'||v.length>30)||!s||!['xp','minutes','sessions'].every(k=>Number.isInteger(s[k])&&s[k]>=0&&s[k]<10000000)||!Array.isArray(s.saved)||s.saved.length>500||s.saved.some((v:unknown)=>typeof v!=='string'||v.length>40||!wordPattern.test(v))||!Array.isArray(s.dates)||s.dates.length>5000||s.dates.some((v:unknown)=>typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)))return Response.json({error:'Invalid profile'},{status:400});

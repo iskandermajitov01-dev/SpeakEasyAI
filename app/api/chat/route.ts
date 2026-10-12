@@ -1,10 +1,13 @@
+import {sameOrigin} from '@/lib/app-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import { getAppUser } from '@/lib/app-auth';
 import { groqConfig, levelGuides } from '@/lib/groq';
 import {storage} from '@/db/storage';
 import {academy} from '@/lib/academy-server';
 import {missions} from '@/lib/adventures';
 export async function POST(request:Request){
- if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
+ if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});
  const user=await getAppUser();if(!user)return Response.json({error:'Sign in to talk with Emmy.'},{status:401});
  const {key,model}=groqConfig();if(!key)return Response.json({error:'AI is not connected yet. Please try again later.'},{status:503});
  try{

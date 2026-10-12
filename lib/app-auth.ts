@@ -27,7 +27,12 @@ export async function removeSession(){
 export function authJson(data:unknown,status=200,cookie?:string){
  return Response.json(data,{status,headers:{'Cache-Control':'no-store','Pragma':'no-cache',...(cookie?{'Set-Cookie':cookie}:{})}});
 }
-export function sameOrigin(request:Request){return request.headers.get('origin')===new URL(request.url).origin;}
+export function sameOrigin(request:Request){
+ const url=new URL(request.url);
+ // Next.js may normalize the internal hostname to localhost. Host is the public request authority.
+ const host=request.headers.get('host')||url.host;
+ return request.headers.get('origin')===url.protocol+'//'+host;
+}
 export async function consumeAttempt(key:string,limit:number,windowMs:number){
  const bucket=digest(key),now=Date.now();
  const row=await storage().prepare('INSERT INTO app_auth_attempts (bucket,attempts,expires) VALUES (?,1,?) ON CONFLICT(bucket) DO UPDATE SET attempts=CASE WHEN expires<=? THEN 1 ELSE attempts+1 END, expires=CASE WHEN expires<=? THEN excluded.expires ELSE expires END RETURNING attempts,expires').bind(bucket,now+windowMs,now,now).first<{attempts:number;expires:number}>();

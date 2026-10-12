@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import {questions} from '../lib/academy.ts';
+const origin=process.env.AUTH_TEST_ORIGIN||'http://127.0.0.1:5174';
+assert(['localhost','127.0.0.1'].includes(new URL(origin).hostname),'Local previews only');
+let cookie='';
+async function post(path,body){
+ const r=await fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json',Cookie:cookie},body:JSON.stringify(body)});
+ const data=await r.json();return {status:r.status,data,cookie:r.headers.get('set-cookie')?.split(';')[0]};
+}
+const account=await post('/api/auth',{action:'register',username:'learn_'+randomBytes(5).toString('hex'),password:randomBytes(20).toString('hex')});
+assert.equal(account.status,200,JSON.stringify(account.data));cookie=account.cookie;
+assert.equal((await post('/api/academy',{action:'register',name:'Migration test'})).status,200);
+const start=await post('/api/academy',{action:'start-test',kind:'placement'});assert.equal(start.status,200);
+const answers=start.data.test.questions.map(q=>questions.find(x=>x.id===q.id).answer);
+const placed=await post('/api/academy',{action:'submit-test',id:start.data.test.id,answers});
+assert.equal(placed.status,200);assert.equal(placed.data.academy.level,'C1');assert.equal(placed.data.academy.coins,30);
+assert.equal((await post('/api/academy',{action:'submit-test',id:start.data.test.id,answers})).status,409);
+const daily=await post('/api/academy',{action:'start-test',kind:'daily'});
+const rewarded=await post('/api/academy',{action:'submit-test',id:daily.data.test.id,answers:daily.data.test.questions.map(q=>questions.find(x=>x.id===q.id).answer)});
+assert.equal(rewarded.status,200);assert.equal(rewarded.data.academy.coins,45);
+const buy=await post('/api/academy',{action:'buy',id:'avatar-fox'});
+assert.equal(buy.status,200);assert.equal(buy.data.academy.coins,5);assert(buy.data.academy.owned.includes('avatar-fox'));
+assert.equal((await post('/api/academy',{action:'buy',id:'avatar-fox'})).status,409);
+const topic=await post('/api/academy',{action:'topic',name:'My migration topic',description:'Conversations about moving a project.'});
+assert.equal(topic.status,200);assert.equal(topic.data.academy.customTopics.length,1);
+const removed=await post('/api/academy',{action:'delete-topic',id:topic.data.academy.customTopics[0].id});
+assert.equal(removed.status,200);assert.equal(removed.data.academy.customTopics.length,0);
+const memory=await post('/api/academy',{action:'memory',enabled:true,memories:['I enjoy learning languages.']});
+assert.equal(memory.status,200);assert.deepEqual(memory.data.academy.adventure.memories,['I enjoy learning languages.']);
+assert.equal((await post('/api/academy',{action:'start-session',topic:'everyday'})).status,200);
+const publicData=await fetch(origin+'/api/leaderboard',{headers:{Cookie:cookie}});assert.equal(publicData.status,200);
+assert.equal((await post('/api/auth',{action:'logout'})).status,200);
+console.log('Learning integration passed: placement, atomic rewards, duplicate protection, shop, JSON topics/memory, sessions and leaderboard.');

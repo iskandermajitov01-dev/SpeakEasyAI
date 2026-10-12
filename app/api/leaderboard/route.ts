@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import {getAppUser} from '@/lib/app-auth';
 import {storage} from '@/db/storage';
 export async function GET(){const user=await getAppUser();if(!user)return Response.json({error:'Sign in to see the community leaderboard.'},{status:401});try{

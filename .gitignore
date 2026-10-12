@@ -45,3 +45,8 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Local SQLite and environment template
+/.data/
+*.tsbuildinfo
+!.env.example

@@ -1,9 +1,12 @@
+import {sameOrigin} from '@/lib/app-auth';
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 import { getAppUser } from '@/lib/app-auth';
 import { groqConfig } from '@/lib/groq';
 import { normalizeWord, seedWords, wordPattern, type WordEntry } from '@/lib/vocabulary';
 
 export async function POST(request:Request){
- if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Forbidden'},{status:403});
+ if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});
  try{
   const raw=await request.text();if(raw.length>2500)return Response.json({error:'Request too long.'},{status:413});
   const body=JSON.parse(raw);if(typeof body.word!=='string'||body.word.length>40||!wordPattern.test(normalizeWord(body.word))||typeof body.context!=='string'||body.context.length>1200)return Response.json({error:'Choose an English word.'},{status:400});

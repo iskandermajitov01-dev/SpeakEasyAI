@@ -16,7 +16,7 @@ export function useConversationVoice(options:Options){
    const mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
    if(token!==generation.current){mic.getTracks().forEach(t=>t.stop());return}stream.current=mic;
    const mime=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported(t));
-   const rec=new MediaRecorder(mic,mime?{mimeType:mime}:undefined);recorder.current=rec;const chunks:BlobPart[]=[];discard.current=false;hasVoice.current=false;
+   const rec=new MediaRecorder(mic,{...(mime?{mimeType:mime}:{}),audioBitsPerSecond:64000});recorder.current=rec;const chunks:BlobPart[]=[];discard.current=false;hasVoice.current=false;
    const began=performance.now();let lastVoice=began,voiceFrames=0;const AC=window.AudioContext||(window as any).webkitAudioContext;
    if(AC){const ac=new AC();context.current=ac;await ac.resume();const source=ac.createMediaStreamSource(mic),analyser=ac.createAnalyser();analyser.fftSize=1024;source.connect(analyser);const data=new Uint8Array(analyser.fftSize);
     const meter=()=>{if(rec.state!=='recording')return;analyser.getByteTimeDomainData(data);let power=0;for(const v of data)power+=((v-128)/128)**2;const rms=Math.sqrt(power/data.length);setVolume(Math.min(1,rms*8));const now=performance.now();if(rms>.018){voiceFrames++;lastVoice=now;if(voiceFrames>8)hasVoice.current=true}if(hasVoice.current&&now-lastVoice>2200&&now-began>3000){rec.stop();return}if(now-began>60000){rec.stop();return}raf.current=requestAnimationFrame(meter)};
@@ -28,7 +28,7 @@ export function useConversationVoice(options:Options){
     if(token!==generation.current)return;
     releaseMic();setRecording(false);recorder.current=null;if(timer.current)clearTimeout(timer.current);
     if(discard.current||token!==generation.current)return;
-    const blob=new Blob(chunks,{type:rec.mimeType||mime||'audio/webm'});if(blob.size<200||(!!AC&&!hasVoice.current)){wantLive.current=false;setLive(false);current.current.onError('No speech was detected. Please try again.');return}
+    const blob=new Blob(chunks,{type:rec.mimeType||mime||'audio/webm'});if(blob.size>3800000){wantLive.current=false;setLive(false);current.current.onError('Recording too large. Please try a shorter reply.');return}if(blob.size<200||(!!AC&&!hasVoice.current)){wantLive.current=false;setLive(false);current.current.onError('No speech was detected. Please try again.');return}
     current.current.onRecording?.(blob);setTranscribing(true);const ctrl=new AbortController();request.current=ctrl;
     try{const form=new FormData();form.append('file',blob,blob.type.includes('mp4')?'speech.m4a':blob.type.includes('ogg')?'speech.ogg':'speech.webm');const r=await fetch('/api/transcribe',{method:'POST',body:form,signal:ctrl.signal});const result:any=await r.json();if(token!==generation.current)return;if(!r.ok)throw Error(result.error);if(!result.text){current.current.onError('Speech was not recognised. Tap the microphone and try again.');wantLive.current=false;setLive(false);return}setTranscribing(false);current.current.onTranscript(result.text)}catch(e:any){if(e.name!=='AbortError'){current.current.onError(e.message||'Could not recognise speech.');wantLive.current=false;setLive(false)}}finally{if(token===generation.current)setTranscribing(false)}
    };
