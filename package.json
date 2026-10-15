@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
     "vercel-build": "npm run db:migrate && npm run build",
-    "test:auth": "node scripts/test-auth.mjs"
+    "test:auth": "node scripts/test-auth.mjs",
+    "test:ai": "node scripts/test-ai.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

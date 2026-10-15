@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import {SpeechCache} from '@/lib/speech-cache';
 type Options={onTranscript:(text:string)=>void;onError:(text:string)=>void;rate:number;onRecording?:(blob:Blob)=>void};
 export function useConversationVoice(options:Options){
  const current=useRef(options);current.current=options;
+ const speechCache=useRef(new SpeechCache());
  const [recording,setRecording]=useState(false),[transcribing,setTranscribing]=useState(false),[preparing,setPreparing]=useState(false),[speaking,setSpeaking]=useState(false),[live,setLive]=useState(false),[volume,setVolume]=useState(0);
  const recorder=useRef<MediaRecorder|null>(null),stream=useRef<MediaStream|null>(null),context=useRef<AudioContext|null>(null),audio=useRef<HTMLAudioElement|null>(null),url=useRef(''),request=useRef<AbortController|null>(null),raf=useRef(0),generation=useRef(0),wantLive=useRef(false),starting=useRef(false),timer=useRef<ReturnType<typeof setTimeout>|null>(null),discard=useRef(false),hasVoice=useRef(false);
  function stopAudio(){request.current?.abort();if(audio.current){audio.current.pause();audio.current.src='';audio.current=null}if(url.current){URL.revokeObjectURL(url.current);url.current=''}setSpeaking(false);setPreparing(false)}
@@ -37,7 +39,7 @@ export function useConversationVoice(options:Options){
  }
  async function say(text:string,rate?:number){
   if(timer.current)clearTimeout(timer.current);discard.current=true;if(recorder.current?.state==='recording')recorder.current.stop();releaseMic();setRecording(false);stopAudio();const token=++generation.current;setPreparing(true);const ctrl=new AbortController();request.current=ctrl;
-  try{const r=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:ctrl.signal});if(!r.ok){const d:any=await r.json();throw Error(d.error)}const blob=await r.blob();if(token!==generation.current)return;url.current=URL.createObjectURL(blob);const player=new Audio(url.current);audio.current=player;player.playbackRate=rate??current.current.rate;player.preservesPitch=true;
+  try{let blob=speechCache.current.get(text);if(!blob){const r=await fetch('/api/speech',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:ctrl.signal});if(!r.ok){const d:any=await r.json();throw Error(d.error)}blob=await r.blob();if(token!==generation.current)return;speechCache.current.set(text,blob)}if(token!==generation.current)return;url.current=URL.createObjectURL(blob);const player=new Audio(url.current);audio.current=player;player.playbackRate=rate??current.current.rate;player.preservesPitch=true;
    player.onplaying=()=>{if(token===generation.current){setSpeaking(true);setPreparing(false)}};
    player.onended=()=>{if(token!==generation.current)return;setSpeaking(false);if(url.current)URL.revokeObjectURL(url.current);url.current='';audio.current=null;if(wantLive.current)timer.current=setTimeout(()=>void listen(),250)};
    player.onerror=()=>{if(token!==generation.current)return;wantLive.current=false;setLive(false);current.current.onError('Could not play audio. Tap Play reply to try again.');setSpeaking(false);setPreparing(false)};

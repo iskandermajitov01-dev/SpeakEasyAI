@@ -1,6 +1,6 @@
 # SpeakEasy English
 
-English-learning PWA with voice conversations through Groq, independent username/password accounts, CEFR placement, vocabulary games, progression and a Sparks shop.
+English-learning PWA with voice conversations through OpenAI or Groq, independent username/password accounts, CEFR placement, vocabulary games, progression and a Sparks shop.
 
 The supported deployment is **Next.js on Vercel + Turso**. See [VERCEL.md](./VERCEL.md) for database setup, environment variables and deployment.
 
